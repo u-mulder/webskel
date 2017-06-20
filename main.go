@@ -2,27 +2,28 @@ package main
 
 import (
 	"fmt"
-	//"path/filepath"
-	//"path"
 	"os"
 )
 
-func main() {
-	// Finding current working directory
-	cwd, err := os.Getwd()
-	if err != nil {
-		fmt.Println("Error detecting current directory: ", err)
-		os.Exit(1)
-	}
+var tplFileContents = `{{define "IndexTpl"}}
+<!doctype html>
+<html>
+    <head>
+        <title>Title Here</title>
+    </head>
 
-	// Create 'main.go' file
-	f, err := os.Create(cwd + "/main2222.go") // TODO
-	if err != nil {
-		fmt.Println("Error creating 'main.go' file: ", err)
-	}
-	defer f.Close()
+    <body>
+        <div>
+            Content here
+        </div>
 
-	fileContents := `package main
+        <script type="text/javascript" src="script.js"></script>
+        <script type="text/javascript"> jsCode Here </script>
+    </body>
+</html>
+{{end}}`
+
+var goFileContents = `package main
 
 import (
     "database/sql"
@@ -84,7 +85,22 @@ func postOtherPage(rw http.ResponseWriter, rq *http.Request, _ httprouter.Params
     // TODO
 }`
 
-	_, err = f.WriteString(fileContents)
+func main() {
+	// Finding current working directory
+	cwd, err := os.Getwd()
+	if err != nil {
+		fmt.Println("Error detecting current directory: ", err)
+		os.Exit(1)
+	}
+
+	// Create 'main.go' file
+	f, err := os.Create(cwd + "/main.go")
+	if err != nil {
+		fmt.Println("Error creating 'main.go' file: ", err)
+	}
+	defer f.Close()
+
+	_, err = f.WriteString(goFileContents)
 	if err != nil {
 		fmt.Println("Error writing to 'main.go' file: ", err)
 	}
@@ -97,8 +113,21 @@ func postOtherPage(rw http.ResponseWriter, rq *http.Request, _ httprouter.Params
 		err := os.MkdirAll(publicPath+v, 0755)
 		if err != nil {
 			fmt.Println("Error creating folder '", v, "': ", err)
+		} else {
+			if v == "tpls" {
+				// Create 'index.tpl' file
+				f, err := os.Create(publicPath + v + "/index.tpl")
+				if err != nil {
+					fmt.Println("Error creating 'index.tpl' file: ", err)
+				} else {
+					_, err = f.WriteString(tplFileContents)
+					if err != nil {
+						fmt.Println("Error writing to 'index.tpl' file: ", err)
+					}
+					f.Sync()
+				}
+				defer f.Close()
+			}
 		}
 	}
-
-	// TODO create some tpl files
 }
