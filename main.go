@@ -32,6 +32,7 @@ import (
     _ "github.com/lib/pq"
     "html/template"
     "net/http"
+    "os"
 )
 
 var db *sql.DB
